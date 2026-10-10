@@ -12,7 +12,7 @@
 
 基于转录文本稿的视频剪辑 SKILL：输入一段口播/讲课视频，自动清掉口误、口吃、重复口播，产出干净成片。
 
-[安装](#安装) · [工作原理](#工作原理) · [剪辑要求](#剪辑要求)
+[安装与快速开始](#安装与快速开始) · [工作原理](#工作原理) · [剪辑要求](#剪辑要求)
 
 ## 为什么选它？
 
@@ -21,17 +21,33 @@
 - **长视频友好** —— 转写稿超长自动分段处理，决策合并后一次性渲染整条视频。
 - **GPU 加速渲染** —— 默认走 NVENC，无 NVENC 自动回退 CPU。
 
-## 安装
+## 安装与快速开始
 
-> **给 AI Agent 的安装指令**：本仓库本身就是一个 skill。安装即「把仓库内容放进当前环境的 skills 目录，`SKILL.md` 作为入口」。请按以下步骤自动完成，全程无需打扰用户：
+### 快速开始（人类用户）
 
-1. 找到当前 Agent 环境的用户级 skills 目录（常见位置：`~/.workbuddy/skills/`、`~/.agents/skills/`、`~/.claude/skills/` 等，按你所运行的环境判断）。
-2. 在该目录下创建 `video-edit/`，并把本仓库全部文件放入其中（或直接 `git clone` 到该目录）。
-3. 确认 `video-edit/SKILL.md` 存在——它即 skill 入口，装载后即生效。
+1. 安装：
 
-**依赖与 key 由 Agent 在首次使用时按需处理**：缺 `dashscope` 就 `pip install`，缺 `ffmpeg` 就提示安装，缺 `DASHSCOPE_API_KEY` 就引导用户到 [阿里云百炼](https://docs.bailian.console.aliyun.com/zh/model-studio/get-api-key) 申请后写入 `.env`。不要把这些当作安装前置步骤。
+```bash
+git clone https://github.com/ddkeeper/video-edit.git
+```
 
-装好后，用户只需说一句「帮我剪这段视频」，转写 → 决策 → 映射 → 渲染的完整流程由 Agent 按 [`SKILL.md`](SKILL.md) 自动执行。
+2. 在 Agent 里输入提示词，让它用安装好的 skill 剪辑视频，例如：
+
+> 用 video-edit skill 帮我剪辑这段视频。
+
+### 快速开始（AI Agent）
+
+> 以下指令面向 AI Agent，请用 git 将本仓库安装到当前环境对应的 skill 目录。
+
+```bash
+git clone https://github.com/ddkeeper/video-edit.git <skills目录>/video-edit
+```
+
+`SKILL.md` 即 skill 入口，装载后生效；装好后按 [`SKILL.md`](SKILL.md) 的流程自动执行。
+
+### 说明
+
+转录依赖云端语音识别模型，需要相应的 API key（[获取与配置 API Key - 阿里云百炼](https://docs.bailian.console.aliyun.com/zh/model-studio/get-api-key?spm=5176.28197581.0.0.321674a1pKNTN2)）。实际使用中由 Agent 执行 skill 引导完成，此处仅供知悉。
 
 ## 工作原理
 
