@@ -1,88 +1,86 @@
 # video-edit
 
-**Transcript-driven precision video editing** — turn a spoken video into a
-clean cut, with the model making semantic decisions and deterministic scripts
-handling timestamps and rendering.
+**中文** | [English](./README_en.md)
 
-## What it does
+**基于转写的精确视频剪辑** —— 把一段口播视频剪成干净成片。模型负责语义判断，
+脚本负责确定性的时间戳映射与渲染，两者严格解耦。
 
-Given a source video, `video-edit` produces an edited video in four stages:
+## 它做什么
+
+给定一段源视频，`video-edit` 分四步产出成片：
 
 ```
-source video ──transcribe──▶ timestamped transcript
-                                │
-                                ▼
-                   editor model emits {id, keep} decisions
-                                │
-                                ▼
-            map_timestamps ──▶ EDL (millisecond cut points)
-                                │
-                                ▼
-                   render ──▶ final cut (preview / final)
+源视频 ──transcribe──▶ 带时间戳的转写文本
+                          │
+                          ▼
+              编辑模型产出 {id, keep} 决策
+                          │
+                          ▼
+         map_timestamps ──▶ EDL（毫秒级剪辑点）
+                          │
+                          ▼
+                render ──▶ 成片（preview / final）
 ```
 
-The key design decision is the **contract**: the editor model never sees
-timestamps, only `[ID: N]` transcript lines. It returns a JSON array of
-`{"id": N, "keep": "exact substring"}` fragments. This keeps the model's job
-purely semantic while the scripts guarantee frame-accurate cuts.
+核心设计是**契约（contract）**：编辑模型永远看不到时间戳，只看到
+`[ID: N]` 的转写文本行；它返回一份 `{"id": N, "keep": "原文精确子串"}` 的
+JSON 决策。这让模型的工作纯粹是语义性的，而脚本负责帧级精确的剪辑。
 
-## Why this shape?
+## 为什么这样设计？
 
-| Concern | Where it lives | Why |
+| 职责 | 归属 | 原因 |
 | --- | --- | --- |
-| What to cut / keep | editor model (LLM) | Semantic judgement, hard to script |
-| Millisecond mapping | `map_timestamps.py` | Deterministic, needs exactness |
-| Encoding / rendering | `render.py` | Tuned for lecture screencasts |
+| 剪什么 / 留什么 | 编辑模型（LLM） | 语义判断，难以脚本化 |
+| 毫秒级映射 | `map_timestamps.py` | 需要确定性、精确 |
+| 编码 / 渲染 | `render.py` | 针对讲课录屏调优 |
 
-Separating them means you can swap the editor model freely, and the mapping
-step fails loudly instead of silently misaligning audio.
+两者解耦后，你可以随意替换编辑模型；而映射步骤遇到问题会**直接报错**，
+而不是静默错位。
 
-## Quick start
+## 快速上手
 
-### 1. Prerequisites
+### 1. 环境准备
 
 - Python 3.10+
-- [FFmpeg](https://ffmpeg.org/) (`ffmpeg` and `ffprobe` on `PATH`)
-- A DashScope API key (for transcription)
+- [FFmpeg](https://ffmpeg.org/)（`ffmpeg` 和 `ffprobe` 需在 `PATH` 上）
+- 一个 DashScope API key（用于转写）
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configure the key
+### 2. 配置 key
 
-Copy `.env.example` to `.env` and fill in your key:
-
-```bash
-cp .env.example .env   # then edit DASHSCOPE_API_KEY
-```
-
-The key is read from (in order): the `DASHSCOPE_API_KEY` environment variable,
-`video-edit/.env`, the project `.env`, or `~/.codex/video-edit.env`.
-
-### 3. Run the pipeline
+复制 `.env.example` 为 `.env` 并填入你的 key：
 
 ```bash
-# 1. Transcribe (writes raw_timestamps.json + clean_transcript.txt)
-python helpers/transcribe.py <video> --edit-dir <edit_dir>
-
-# 2. Have the editor model read the transcript and write llm_output.json
-#    (see "Editor contract" below; this is the only manual/LLM step)
-
-# 3. Map decisions to millisecond timestamps
-python helpers/map_timestamps.py <edit_dir>/llm_output.json <edit_dir>/raw_timestamps.json
-
-# 4. Render (NVENC when available, CPU fallback)
-python helpers/render.py <video> <edit_dir>/edl.json -o <edit_dir>/final.mp4
+cp .env.example .env   # 然后编辑 DASHSCOPE_API_KEY
 ```
 
-A zero-dependency walkthrough of the data shapes lives in
-[`examples/`](examples/README.md) — no video or API key required.
+key 的读取顺序：`DASHSCOPE_API_KEY` 环境变量 → `video-edit/.env` → 项目
+`.env` → `~/.codex/video-edit.env`。
 
-## Editor contract
+### 3. 跑通流水线
 
-The editor model (LLM) receives only transcript lines and returns a raw JSON
-array:
+```bash
+# 1. 转写（产出 raw_timestamps.json + clean_transcript.txt）
+python helpers/transcribe.py <视频> --edit-dir <目录>
+
+# 2. 让编辑模型读取转写文本，写出 llm_output.json
+#    （见下方「编辑契约」，这是唯一需要模型/人工的一步）
+
+# 3. 把决策映射回毫秒级时间戳
+python helpers/map_timestamps.py <目录>/llm_output.json <目录>/raw_timestamps.json
+
+# 4. 渲染（有 NVENC 就用，否则回退 CPU）
+python helpers/render.py <视频> <目录>/edl.json -o <目录>/final.mp4
+```
+
+无需视频、无需 key 的完整数据形态演示见 [`examples/`](examples/README.md)。
+
+## 编辑契约
+
+编辑模型（LLM）只接收转写文本行，返回一个纯 JSON 数组：
 
 ```json
 [
@@ -91,40 +89,38 @@ array:
 ]
 ```
 
-Rules:
+规则：
 
-- `keep` must be an **exact, contiguous substring** of the source line for
-  that `id`. Do not "fix" ASR errors, punctuation, spacing, or casing.
-- An `id` absent from the array is removed entirely.
-- Multiple entries with the same `id` allow an interior deletion, in source
-  order. To remove disfluencies in the middle of a line, emit **separate
-  objects with the same `id`** — never merge the kept parts back into one
-  object, or the middle cut is lost. (See Rule 6 in
-  [`SKILL.md`](SKILL.md) for a worked example.)
+- `keep` 必须是该 `id` 对应源句的**精确连续子串**。不要「修正」ASR 错误、
+  标点、空格或大小写。
+- 数组里不出现的 `id` 会被整体删除。
+- 同一 `id` 的多条记录表示一次**内部删除**，按源顺序排列。要在句中删掉
+  口吃/口误时，必须输出**同 `id` 的多条独立记录**——绝不能把保留的两段又
+  合并回一条，否则中间的剪切就丢失了。（见 [`SKILL.md`](SKILL.md) 第 6 条规则的完整例子。）
 
-## Encoding defaults
+## 编码默认值
 
-Tuned for long, low-motion lecture screencasts:
+面向长时间、低动态的录屏讲课场景调优：
 
-| Flag | Default | Notes |
+| 参数 | 默认值 | 说明 |
 | --- | --- | --- |
-| `--encoder` | `auto` | NVENC when available, else CPU |
-| `--workers` | `2` | Two segments encoded in parallel |
-| `--nvenc-preset` | `p5` final / `p4` preview | p5 ≈ 1.45× faster than p7, no visible loss |
-| `--priority` | `below` | Keeps the desktop responsive (Windows) |
+| `--encoder` | `auto` | 有 NVENC 就用，否则 CPU |
+| `--workers` | `2` | 两段并行编码 |
+| `--nvenc-preset` | `p5` final / `p4` preview | p5 比 p7 快约 1.45×，肉眼无差 |
+| `--priority` | `below` | 渲染时保持桌面流畅（Windows） |
 
-See [`SKILL.md`](SKILL.md) for the full fallback table and measured benchmarks.
+完整 fallback 与实测数据见 [`SKILL.md`](SKILL.md)。
 
-## Repository layout
+## 目录结构
 
 ```
 video-edit/
-├── SKILL.md              # full skill specification, rules & editor prompt
+├── SKILL.md              # 完整 skill 规格、规则与编辑提示词
 ├── helpers/
-│   ├── transcribe.py     # DashScope ASR → character-level timestamps
-│   ├── map_timestamps.py # {id,keep} decisions → millisecond EDL (core)
-│   └── render.py         # EDL → preview/final via NVENC or CPU
-├── examples/             # minimal self-contained pipeline demo
+│   ├── transcribe.py     # DashScope ASR → 字级时间戳
+│   ├── map_timestamps.py # {id,keep} 决策 → 毫秒级 EDL（核心）
+│   └── render.py         # EDL → preview/final（NVENC 或 CPU）
+├── examples/             # 最小自包含流水线演示
 ├── requirements.txt
 └── .env.example
 ```
@@ -132,7 +128,3 @@ video-edit/
 ## License
 
 [MIT](LICENSE)
-
-## 中文文档
-
-[README.zh-CN.md](README.zh-CN.md)
