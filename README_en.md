@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-required-green.svg)](https://ffmpeg.org/)
 
 <div align="center">
 
@@ -11,7 +12,7 @@
 
 Transcript-driven video editing SKILL: feed it a spoken lecture video and it cleans up false starts, stutters, and duplicate takes into a tidy final cut.
 
-[Installation](#installation--quick-start) · [How it works](#how-it-works) · [Editor contract](#editor-contract)
+[Installation](#installation) · [How it works](#how-it-works) · [Editing requirements](#editing-requirements)
 
 ## Why?
 
@@ -20,40 +21,15 @@ Transcript-driven video editing SKILL: feed it a spoken lecture video and it cle
 - **Long-video friendly** — long transcripts are chunked automatically, decisions merged, and the whole video rendered in one pass.
 - **GPU-accelerated rendering** — defaults to NVENC, falls back to CPU when unavailable.
 
-## Installation & Quick Start
+## Installation
 
-### Prerequisites
-
-- Python 3.10+, [FFmpeg](https://ffmpeg.org/) (`ffmpeg` + `ffprobe` on `PATH`)
-- A DashScope API key (for transcription)
-
-### Quick start (humans)
+Clone the repo and drop it into your Agent software's skills directory (or import it your software's way), and it's ready to use.
 
 ```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Configure the key
-cp .env.example .env   # then edit DASHSCOPE_API_KEY
-
-# 3. Process one video (transcribe → edit → map → render)
-python helpers/transcribe.py <video> --edit-dir <edit_dir>
-# editor model reads the transcript, writes llm_output.json (the only manual/LLM step)
-python helpers/map_timestamps.py <edit_dir>/llm_output.json <edit_dir>/raw_timestamps.json
-python helpers/render.py <video> <edit_dir>/edl.json -o <edit_dir>/final.mp4
+git clone https://github.com/ddkeeper/video-edit.git
 ```
 
-### Quick start (AI agents)
-
-> Steps for AI agents, following the pipeline in [`SKILL.md`](SKILL.md).
-
-**Step 1 — Set up**: install dependencies and configure `DASHSCOPE_API_KEY` (if missing, point the user to [Alibaba Cloud Model Studio](https://docs.bailian.console.aliyun.com/zh/model-studio/get-api-key) to get one).
-
-**Step 2 — Transcribe**: run `transcribe.py` to produce `raw_timestamps.json` + `clean_transcript.txt`.
-
-**Step 3 — Edit**: by default a sub-agent reads the transcript and emits `llm_output.json` (following the contract below); switch to manual only when the user says they want to fill it in. Never ask which mode they want.
-
-**Step 4 — Map & render**: run `map_timestamps.py` to produce the EDL, then `render.py` for the final cut (final by default; add `--preview` only when the user explicitly asks).
+Once installed, just say "edit this video for me" to your Agent — the full pipeline (transcribe, decide, map, render) is defined in [`SKILL.md`](SKILL.md) and the Agent runs it automatically; dependencies and API-key setup are handled by the Agent when needed.
 
 ## How it works
 
@@ -72,12 +48,16 @@ source video ──transcribe──▶ timestamped transcript
                    render ──▶ final cut
 ```
 
-## Editor contract
+## Editing requirements
 
-The editor model receives only transcript lines and returns a raw JSON array `[{"id": N, "keep": "exact source substring"}]`. Three rules:
+The editor model receives only transcript lines and returns a raw JSON array `[{"id": N, "keep": "exact source substring"}]`. Core rules:
 
 - `keep` must be an **exact, contiguous substring** of the source line for that `id` — do not "fix" ASR errors, punctuation, spacing, or casing.
 - An `id` absent from the array is **removed entirely**.
-- Multiple entries with the same `id` = one **interior deletion**, in source order. Never merge the kept parts back into one object.
+- Multiple entries with the same `id` = one **interior deletion**, in source order — never merge the kept parts back into one object.
 
-All 7 rules, long-transcript chunking, encoding defaults, and the editor prompt live in [`SKILL.md`](SKILL.md). A zero-dependency walkthrough of the data shapes is in [`examples/`](examples/README.md) — no video or API key required.
+All 7 rules (preserving technical connectives, latest-take policy, sub-sentence cuts, etc.) live in the `Editor Prompt` of [`SKILL.md`](SKILL.md).
+
+> **Switching use cases**: this SKILL defaults to spoken lectures. To target another domain (interviews, meeting-note editing, etc.), just edit the `RULES` and examples in the `Editor Prompt` of [`SKILL.md`](SKILL.md) — the rest of the pipeline (transcribe, map, render) stays unchanged.
+
+A zero-dependency walkthrough of the data shapes is in [`examples/`](examples/README.md) — no video or API key required.
