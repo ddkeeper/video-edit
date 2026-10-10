@@ -28,8 +28,10 @@
 1. 安装：
 
 ```bash
+cd <素材项目目录>
+mkdir -p .agent/skill
+cd .agent/skill
 git clone https://github.com/ddkeeper/video-edit.git
-cd video-edit
 ```
 
 2. 在 Agent 里输入提示词，让它用安装好的 skill 剪辑视频，例如：
@@ -38,7 +40,7 @@ cd video-edit
 
 ### 快速开始（AI Agent）
 
-> 以下指令面向 AI Agent，请用 git 将本仓库安装到当前环境对应的 skill 目录。
+> 以下指令面向 AI Agent，请用 git 将本仓库安装到当前项目对应的 skill 目录下。
 
 ```bash
 git clone https://github.com/ddkeeper/video-edit.git <skills目录>/video-edit
