@@ -29,11 +29,12 @@ Transcript-driven video editing SKILL: feed it a spoken lecture video and it cle
 
 ```bash
 git clone https://github.com/ddkeeper/video-edit.git
+cd video-edit
 ```
 
 2. Enter a prompt in your Agent to edit a video with the installed skill, e.g.:
 
-> Use the video-edit skill to edit this video for me.
+> Use the video-edit skill at `/path/to/video-edit` to edit this video for me.
 
 ### Quick start (AI agents)
 

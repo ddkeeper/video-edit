@@ -29,11 +29,12 @@
 
 ```bash
 git clone https://github.com/ddkeeper/video-edit.git
+cd video-edit
 ```
 
 2. 在 Agent 里输入提示词，让它用安装好的 skill 剪辑视频，例如：
 
-> 用 video-edit skill 帮我剪辑这段视频。
+> 用 `/path/to/video-edit` 这个 video-edit skill 帮我剪辑这段视频。
 
 ### 快速开始（AI Agent）
 
@@ -77,5 +78,3 @@ git clone https://github.com/ddkeeper/video-edit.git <skills目录>/video-edit
 完整 7 条规则（含技术连接词保留、最后版本优先、子句剪切等）见 [`SKILL.md`](SKILL.md) 的 `Editor Prompt`。
 
 > **换使用场景**：本 SKILL 默认面向口播/讲课视频。若要用于别的场景（如访谈、会议纪要剪辑），只需修改 [`SKILL.md`](SKILL.md) 里 `Editor Prompt` 的 `RULES` 与例句即可，其余流程（转写、映射、渲染）无需改动。
-
-无需视频、无需 key 的完整数据形态演示见 [`examples/`](examples/README.md)。
