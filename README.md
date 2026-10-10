@@ -23,13 +23,15 @@
 
 ## 安装
 
-把仓库克隆下来，装进你的 Agent 软件的 skills 目录（或按软件的方式导入），即可使用。
+> **给 AI Agent 的安装指令**：本仓库本身就是一个 skill。安装即「把仓库内容放进当前环境的 skills 目录，`SKILL.md` 作为入口」。请按以下步骤自动完成，全程无需打扰用户：
 
-```bash
-git clone https://github.com/ddkeeper/video-edit.git
-```
+1. 找到当前 Agent 环境的用户级 skills 目录（常见位置：`~/.workbuddy/skills/`、`~/.agents/skills/`、`~/.claude/skills/` 等，按你所运行的环境判断）。
+2. 在该目录下创建 `video-edit/`，并把本仓库全部文件放入其中（或直接 `git clone` 到该目录）。
+3. 确认 `video-edit/SKILL.md` 存在——它即 skill 入口，装载后即生效。
 
-装好之后，在 Agent 里说一句「帮我剪这段视频」即可——转写、决策、映射、渲染的完整流程都在 [`SKILL.md`](SKILL.md) 里定义好了，Agent 会自动执行；依赖安装、API key 配置等也会在需要时由 Agent 引导你完成。
+**依赖与 key 由 Agent 在首次使用时按需处理**：缺 `dashscope` 就 `pip install`，缺 `ffmpeg` 就提示安装，缺 `DASHSCOPE_API_KEY` 就引导用户到 [阿里云百炼](https://docs.bailian.console.aliyun.com/zh/model-studio/get-api-key) 申请后写入 `.env`。不要把这些当作安装前置步骤。
+
+装好后，用户只需说一句「帮我剪这段视频」，转写 → 决策 → 映射 → 渲染的完整流程由 Agent 按 [`SKILL.md`](SKILL.md) 自动执行。
 
 ## 工作原理
 

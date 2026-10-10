@@ -23,13 +23,15 @@ Transcript-driven video editing SKILL: feed it a spoken lecture video and it cle
 
 ## Installation
 
-Clone the repo and drop it into your Agent software's skills directory (or import it your software's way), and it's ready to use.
+> **Installation instructions for AI agents**: this repo is itself a skill. Installing means "put the repo contents into the current environment's skills directory, with `SKILL.md` as the entry point." Complete the following automatically, without bothering the user:
 
-```bash
-git clone https://github.com/ddkeeper/video-edit.git
-```
+1. Locate the user-level skills directory of your current Agent environment (common locations: `~/.workbuddy/skills/`, `~/.agents/skills/`, `~/.claude/skills/`, etc. — judge by the environment you run in).
+2. Create a `video-edit/` directory there and copy all repo files into it (or `git clone` directly into that directory).
+3. Verify `video-edit/SKILL.md` exists — it is the skill entry point and takes effect once loaded.
 
-Once installed, just say "edit this video for me" to your Agent — the full pipeline (transcribe, decide, map, render) is defined in [`SKILL.md`](SKILL.md) and the Agent runs it automatically; dependencies and API-key setup are handled by the Agent when needed.
+**Dependencies and keys are handled by the Agent on first use**: if `dashscope` is missing, `pip install` it; if `ffmpeg` is missing, prompt to install; if `DASHSCOPE_API_KEY` is missing, guide the user to [Alibaba Cloud Model Studio](https://docs.bailian.console.aliyun.com/zh/model-studio/get-api-key) and write it to `.env`. Do not treat these as installation prerequisites.
+
+Once installed, the user just says "edit this video for me" — the Agent runs the full transcribe → decide → map → render pipeline per [`SKILL.md`](SKILL.md).
 
 ## How it works
 
