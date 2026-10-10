@@ -6,13 +6,17 @@
 
 </div>
 
-**Transcript-driven precision video editing** — turn a spoken video into a
-clean cut, with the model making semantic decisions and deterministic scripts
-handling timestamps and rendering.
+Transcript-driven precision video editing: **the model makes semantic decisions, deterministic scripts handle frame-accurate timestamp mapping and rendering — the two stay strictly decoupled**. Feed it a spoken lecture video and it cleans up false starts, stutters, and duplicate takes into a tidy final cut.
 
-## What it does
+## Core idea
 
-Given a source video, `video-edit` produces an edited video in four stages:
+- The editor model **never sees timestamps**, only `[ID: N]` transcript lines.
+- It returns a JSON decision of `{"id": N, "keep": "exact source substring"}` — purely semantic, no clock-touching.
+- Scripts map those decisions to character-level timestamps, produce millisecond cut points (EDL), and render with NVENC.
+
+This lets you swap the editor model freely, and the mapping step **fails loudly** instead of silently misaligning audio.
+
+## Four-stage pipeline
 
 ```
 source video ──transcribe──▶ timestamped transcript
@@ -24,31 +28,14 @@ source video ──transcribe──▶ timestamped transcript
             map_timestamps ──▶ EDL (millisecond cut points)
                                 │
                                 ▼
-                   render ──▶ final cut (preview / final)
+                   render ──▶ final cut
 ```
-
-The key design decision is the **contract**: the editor model never sees
-timestamps, only `[ID: N]` transcript lines. It returns a JSON array of
-`{"id": N, "keep": "exact substring"}` fragments. This keeps the model's job
-purely semantic while the scripts guarantee frame-accurate cuts.
-
-## Why this shape?
-
-| Concern | Where it lives | Why |
-| --- | --- | --- |
-| What to cut / keep | editor model (LLM) | Semantic judgement, hard to script |
-| Millisecond mapping | `map_timestamps.py` | Deterministic, needs exactness |
-| Encoding / rendering | `render.py` | Tuned for lecture screencasts |
-
-Separating them means you can swap the editor model freely, and the mapping
-step fails loudly instead of silently misaligning audio.
 
 ## Quick start
 
 ### 1. Prerequisites
 
-- Python 3.10+
-- [FFmpeg](https://ffmpeg.org/) (`ffmpeg` and `ffprobe` on `PATH`)
+- Python 3.10+, [FFmpeg](https://ffmpeg.org/) (`ffmpeg` + `ffprobe` on `PATH`)
 - A DashScope API key (for transcription)
 
 ```bash
@@ -57,14 +44,7 @@ pip install -r requirements.txt
 
 ### 2. Configure the key
 
-Copy `.env.example` to `.env` and fill in your key:
-
-```bash
-cp .env.example .env   # then edit DASHSCOPE_API_KEY
-```
-
-The key is read from (in order): the `DASHSCOPE_API_KEY` environment variable,
-`video-edit/.env`, the project `.env`, or `~/.codex/video-edit.env`.
+Copy `.env.example` to `.env` and fill in `DASHSCOPE_API_KEY`.
 
 ### 3. Run the pipeline
 
@@ -72,8 +52,7 @@ The key is read from (in order): the `DASHSCOPE_API_KEY` environment variable,
 # 1. Transcribe (writes raw_timestamps.json + clean_transcript.txt)
 python helpers/transcribe.py <video> --edit-dir <edit_dir>
 
-# 2. Have the editor model read the transcript and write llm_output.json
-#    (see "Editor contract" below; this is the only manual/LLM step)
+# 2. Editor model reads the transcript, writes llm_output.json (the only model step)
 
 # 3. Map decisions to millisecond timestamps
 python helpers/map_timestamps.py <edit_dir>/llm_output.json <edit_dir>/raw_timestamps.json
@@ -82,13 +61,11 @@ python helpers/map_timestamps.py <edit_dir>/llm_output.json <edit_dir>/raw_times
 python helpers/render.py <video> <edit_dir>/edl.json -o <edit_dir>/final.mp4
 ```
 
-A zero-dependency walkthrough of the data shapes lives in
-[`examples/`](examples/README.md) — no video or API key required.
+A zero-dependency walkthrough of the data shapes lives in [`examples/`](examples/README.md) — no video or API key required.
 
 ## Editor contract
 
-The editor model (LLM) receives only transcript lines and returns a raw JSON
-array:
+The editor model receives only transcript lines and returns a raw JSON array:
 
 ```json
 [
@@ -97,44 +74,12 @@ array:
 ]
 ```
 
-Rules:
+Three rules:
 
-- `keep` must be an **exact, contiguous substring** of the source line for
-  that `id`. Do not "fix" ASR errors, punctuation, spacing, or casing.
-- An `id` absent from the array is removed entirely.
-- Multiple entries with the same `id` allow an interior deletion, in source
-  order. To remove disfluencies in the middle of a line, emit **separate
-  objects with the same `id`** — never merge the kept parts back into one
-  object, or the middle cut is lost. (See Rule 6 in
-  [`SKILL.md`](SKILL.md) for a worked example.)
+- `keep` must be an **exact, contiguous substring** of the source line for that `id` — do not "fix" ASR errors, punctuation, spacing, or casing.
+- An `id` absent from the array is **removed entirely**.
+- Multiple entries with the same `id` = one **interior deletion**, in source order. To cut disfluencies mid-line, emit **separate objects with the same `id`** — never merge the kept parts back into one object, or the middle cut is lost (worked example in Rule 6 of [`SKILL.md`](SKILL.md)).
 
-## Encoding defaults
+## Full spec
 
-Tuned for long, low-motion lecture screencasts:
-
-| Flag | Default | Notes |
-| --- | --- | --- |
-| `--encoder` | `auto` | NVENC when available, else CPU |
-| `--workers` | `2` | Two segments encoded in parallel |
-| `--nvenc-preset` | `p5` final / `p4` preview | p5 ≈ 1.45× faster than p7, no visible loss |
-| `--priority` | `below` | Keeps the desktop responsive (Windows) |
-
-See [`SKILL.md`](SKILL.md) for the full fallback table and measured benchmarks.
-
-## Repository layout
-
-```
-video-edit/
-├── SKILL.md              # full skill specification, rules & editor prompt
-├── helpers/
-│   ├── transcribe.py     # DashScope ASR → character-level timestamps
-│   ├── map_timestamps.py # {id,keep} decisions → millisecond EDL (core)
-│   └── render.py         # EDL → preview/final via NVENC or CPU
-├── examples/             # minimal self-contained pipeline demo
-├── requirements.txt
-└── .env.example
-```
-
-## License
-
-[MIT](LICENSE)
+All 7 editing rules, long-transcript chunking, encoding defaults, and the editor prompt live in [`SKILL.md`](SKILL.md).
