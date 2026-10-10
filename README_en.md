@@ -16,10 +16,15 @@ Transcript-driven video editing SKILL: feed it a spoken lecture video and it cle
 
 ## Why?
 
-- **Semantic/clock decoupling** — the editor model reads only the transcript and makes semantic decisions; scripts handle character-level timestamp mapping and rendering. Swap the model freely.
-- **Frame-accurate** — character-level timestamps let it cut mid-sentence stutters precisely, rather than dropping whole sentences.
-- **Long-video friendly** — long transcripts are chunked automatically, decisions merged, and the whole video rendered in one pass.
-- **GPU-accelerated rendering** — defaults to NVENC, falls back to CPU when unavailable.
+- **Visual/text separation** — the LLM makes semantic decisions on the transcript and produces edit decisions; scripts handle character-level timestamp mapping and rendering.
+- **Precise cuts** — character-level timestamps let it cut mid-sentence stutters precisely; unkept speech and pauses are dropped naturally.
+- **Long-video chunking** — long transcripts are chunked automatically, decisions merged, and the whole video rendered in one pass, with no length limit.
+- **GPU-accelerated rendering** — defaults to NVENC; an 11-minute final cut renders in about 2 minutes (measured on an RTX 3060 Laptop); the foreground stays responsive during rendering (falls back to CPU without a GPU).
+
+## Suitable / not suitable
+
+- **Suitable for**: videos driven by text-and-speech logic — lectures, course recordings, exam-prep explainers, tech talks.
+- **Not suitable for**: videos driven by visual logic — camera-movement showcases, dance/sports tutorials, visual narratives without speech.
 
 ## Installation & Quick Start
 
