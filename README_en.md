@@ -1,6 +1,10 @@
 # video-edit
 
+<div align="center">
+
 [中文](./README.md) | **English**
+
+</div>
 
 **Transcript-driven precision video editing** — turn a spoken video into a
 clean cut, with the model making semantic decisions and deterministic scripts
