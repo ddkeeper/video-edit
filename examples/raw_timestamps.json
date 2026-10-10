@@ -1,0 +1,56 @@
+[
+  {
+    "text": "我们来看这道题，题目给了三个条件。",
+    "start": 0.00,
+    "end": 2.40,
+    "speaker_id": "speaker_0",
+    "characters": [
+      {"character": "我们来看这道题", "start_time": 0.00, "end_time": 1.10, "type": "char"},
+      {"character": "题目给了三个条件", "start_time": 1.10, "end_time": 2.40, "type": "char"}
+    ]
+  },
+  {
+    "text": "首先先求缓存的命中率。",
+    "start": 2.40,
+    "end": 4.20,
+    "speaker_id": "speaker_0",
+    "characters": [
+      {"character": "首先先求", "start_time": 2.40, "end_time": 3.00, "type": "char"},
+      {"character": "缓存的命中率", "start_time": 3.00, "end_time": 4.20, "type": "char"}
+    ]
+  },
+  {
+    "text": "这个这个我们先看第一个子问题。",
+    "start": 4.20,
+    "end": 6.10,
+    "speaker_id": "speaker_0",
+    "characters": [
+      {"character": "这个这个", "start_time": 4.20, "end_time": 4.90, "type": "char"},
+      {"character": "我们先看", "start_time": 4.90, "end_time": 5.40, "type": "char"},
+      {"character": "第一个子问题", "start_time": 5.40, "end_time": 6.10, "type": "char"}
+    ]
+  },
+  {
+    "text": "命中率等于命中次数除以总的访问次数。",
+    "start": 6.10,
+    "end": 8.50,
+    "speaker_id": "speaker_0",
+    "characters": [
+      {"character": "命中率等于", "start_time": 6.10, "end_time": 6.80, "type": "char"},
+      {"character": "命中次数", "start_time": 6.80, "end_time": 7.20, "type": "char"},
+      {"character": "除以", "start_time": 7.20, "end_time": 7.45, "type": "char"},
+      {"character": "总的访问次数", "start_time": 7.45, "end_time": 8.50, "type": "char"}
+    ]
+  },
+  {
+    "text": "最后把数值代入公式就得到结果。",
+    "start": 8.50,
+    "end": 10.30,
+    "speaker_id": "speaker_0",
+    "characters": [
+      {"character": "最后把数值", "start_time": 8.50, "end_time": 9.10, "type": "char"},
+      {"character": "代入公式", "start_time": 9.10, "end_time": 9.60, "type": "char"},
+      {"character": "就得到结果", "start_time": 9.60, "end_time": 10.30, "type": "char"}
+    ]
+  }
+]

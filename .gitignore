@@ -1,0 +1,20 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime artifacts (per-video edit outputs)
+edit/
+segments/
+*.mp4
+*.flac
+*.wav
+
+# OS / editor
+.DS_Store
+Thumbs.db
