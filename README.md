@@ -33,7 +33,7 @@
 1. 安装：
 
 ```bash
-cd <素材项目目录>
+cd <素材项目目录> # 仅为当前项目安装剪辑 skill
 mkdir -p .agent/skill
 cd .agent/skill
 git clone https://github.com/ddkeeper/video-edit.git
@@ -45,13 +45,13 @@ git clone https://github.com/ddkeeper/video-edit.git
 
 ### 快速开始（AI Agent）
 
-> 以下指令面向 AI Agent，请用 git 将本仓库安装到当前项目对应的 skill 目录下。
+> 以下指令面向 AI Agent，请用 git 将本仓库安装到全局 skills 目录下。
 
 ```bash
-git clone https://github.com/ddkeeper/video-edit.git <skills目录>/video-edit
+git clone https://github.com/ddkeeper/video-edit.git <全局skills目录>/video-edit
 ```
 
-`SKILL.md` 即 skill 入口，装载后生效；装好后按 [`SKILL.md`](SKILL.md) 的流程自动执行。
+`SKILL.md` 即 skill 入口，装载后生效。
 
 ### 说明
 

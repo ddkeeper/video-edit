@@ -45,7 +45,7 @@ git clone https://github.com/ddkeeper/video-edit.git
 
 ### Quick start (AI agents)
 
-> For AI agents: use git to install this repo into the current project's skills directory.
+> For AI agents: use git to install this repo into the global skills directory.
 
 ```bash
 git clone https://github.com/ddkeeper/video-edit.git <skills_dir>/video-edit
