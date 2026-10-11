@@ -61,18 +61,7 @@ Transcription relies on a cloud speech-recognition model and needs an API key ([
 
 The editor model (LLM) stays strictly decoupled from timestamps: it reads only the transcript and makes semantic decisions, while scripts handle character-level timestamp mapping and rendering.
 
-```
-source video ──transcribe──▶ timestamped transcript
-                                │
-                                ▼
-                   editor model emits {id, keep} decisions
-                                │
-                                ▼
-            map_timestamps ──▶ EDL (millisecond cut points)
-                                │
-                                ▼
-                   render ──▶ final cut
-```
+![Video-Edit workflow](docs/workflow.png)
 
 ## Editing requirements
 

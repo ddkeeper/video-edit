@@ -61,18 +61,7 @@ git clone https://github.com/ddkeeper/video-edit.git <skills目录>/video-edit
 
 编辑模型（LLM）与时间戳严格解耦：模型只读转写文本、只做语义判断，脚本负责字级时间戳映射与渲染。
 
-```
-源视频 ──transcribe──▶ 带时间戳的转写文本
-                          │
-                          ▼
-              编辑模型产出 {id, keep} 决策
-                          │
-                          ▼
-         map_timestamps ──▶ EDL（毫秒级剪辑点）
-                          │
-                          ▼
-                render ──▶ 成片
-```
+![Video-Edit 工作流](docs/workflow.png)
 
 ## 剪辑要求
 
